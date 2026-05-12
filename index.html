@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Si parte dalla mente · Form Intake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    :root {
+      --bordeaux: #4a0f14;
+      --bordeaux-deep: #3a0a10;
+      --bordeaux-light: #5a1820;
+      --cream: #f5ead0;
+      --cream-soft: #e8dcc0;
+      --gold: #c9a35e;
+      --gold-soft: #a8854a;
+    }
+    html, body { background: var(--bordeaux); }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--cream);
+      min-height: 100vh;
+      background:
+        radial-gradient(at 50% 0%, rgba(201, 163, 94, 0.05) 0px, transparent 60%),
+        radial-gradient(at 50% 100%, rgba(201, 163, 94, 0.04) 0px, transparent 60%),
+        var(--bordeaux);
+    }
+    .serif { font-family: 'Lora', Georgia, serif; }
+    .frame {
+      background: var(--bordeaux-deep);
+      border: 1px solid var(--gold);
+      border-radius: 0;
+      position: relative;
+    }
+    .frame::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px solid rgba(201, 163, 94, 0.25);
+      pointer-events: none;
+    }
+    .input-base {
+      width: 100%;
+      background: rgba(245, 234, 208, 0.06);
+      border: 1px solid rgba(201, 163, 94, 0.4);
+      color: var(--cream);
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.25s ease;
+      border-radius: 2px;
+    }
+    .input-base:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(245, 234, 208, 0.10);
+      box-shadow: 0 0 0 1px rgba(201, 163, 94, 0.3);
+    }
+    .input-base:hover {
+      border-color: rgba(201, 163, 94, 0.7);
+    }
+    .input-base::placeholder { color: rgba(245, 234, 208, 0.4); }
+    select.input-base {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%23c9a35e' d='M6 8L0 0h12z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+    select.input-base option { background: var(--bordeaux-deep); color: var(--cream); }
+    .label-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 500;
+    }
+    .roman-numeral {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      color: var(--gold);
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .gold-line {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+    .gold-diamond {
+      width: 8px; height: 8px;
+      background: var(--gold);
+      transform: rotate(45deg);
+      display: inline-block;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--bordeaux);
+      padding: 0.875rem 2rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      border: 1px solid var(--gold);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border-radius: 0;
+    }
+    .btn-primary:hover { background: var(--cream); border-color: var(--cream); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent;
+      color: var(--cream);
+      padding: 0.875rem 2rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      border: 1px solid rgba(201, 163, 94, 0.5);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border-radius: 0;
+    }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+    .btn-secondary:disabled { opacity: 0.25; cursor: not-allowed; }
+    .step-enter { animation: stepEnter 0.5s ease-out; }
+    @keyframes stepEnter {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .progress-bg { background: rgba(245, 234, 208, 0.10); }
+    .progress-fill {
+      background: linear-gradient(to right, var(--gold-soft), var(--gold));
+      transition: width 0.6s ease;
+    }
+    .check-card {
+      transition: all 0.25s ease;
+      background: rgba(245, 234, 208, 0.04);
+      border: 1px solid rgba(201, 163, 94, 0.3);
+    }
+    .check-card:hover { border-color: var(--gold); }
+    .check-card:has(input:checked) {
+      background: rgba(201, 163, 94, 0.12);
+      border-color: var(--gold);
+    }
+    input[type="checkbox"] { accent-color: var(--gold); }
+    [x-cloak] { display: none !important; }
+    .text-cream-soft { color: rgba(245, 234, 208, 0.65); }
+    .text-cream-muted { color: rgba(245, 234, 208, 0.45); }
+  </style>
+</head>
+<body>
+  <main class="max-w-2xl mx-auto px-4 py-8 md:py-16" x-data="formApp()">
+
+    <!-- HEADER -->
+    <header class="text-center mb-12">
+      <div class="inline-flex items-center gap-4 mb-6 label-eyebrow">
+        <span class="w-12 h-px" style="background: var(--gold);"></span>
+        Il Programma · Form Intake
+        <span class="w-12 h-px" style="background: var(--gold);"></span>
+      </div>
+      <div class="flex items-center justify-center gap-2 mb-6">
+        <span class="text-gold" style="color: var(--gold);">·</span>
+        <span class="text-gold" style="color: var(--gold);">·</span>
+        <span class="text-gold" style="color: var(--gold);">·</span>
+      </div>
+      <h1 class="serif italic text-4xl md:text-5xl mb-3" style="color: var(--cream);">
+        I tuoi dati di partenza.
+      </h1>
+      <p class="text-sm text-cream-soft max-w-md mx-auto">
+        I dettagli che sembrano marginali sono spesso i più utili.<br>Prenditi il tempo che serve.
+      </p>
+      <div class="gold-line mt-8 max-w-xs mx-auto"></div>
+    </header>
+
+    <!-- PROGRESS BAR -->
+    <div class="frame mb-10 p-5">
+      <div class="relative z-10">
+        <div class="flex items-center justify-between mb-3">
+          <span class="label-eyebrow">
+            Sezione <span x-text="currentStep + 1"></span> di <span x-text="steps.length"></span>
+            · <span class="lowercase tracking-normal text-cream-soft normal-case" style="letter-spacing: 0;" x-text="steps[currentStep].title"></span>
+          </span>
+          <span class="text-xs font-medium" style="color: var(--gold);" x-text="Math.round(((currentStep + 1) / steps.length) * 100) + '%'"></span>
+        </div>
+        <div class="h-px progress-bg rounded-full overflow-hidden">
+          <div class="h-full progress-fill"
+               :style="`width: ${((currentStep + 1) / steps.length) * 100}%`"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <form id="intakeForm" @submit.prevent="submit">
+
+      <!-- STEP 1: ANAGRAFICA -->
+      <section x-show="currentStep === 0" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">I</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Anagrafica</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Iniziamo da te.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="label-eyebrow block mb-2">Nome completo *</label><input name="nome" required class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Età *</label><input name="eta" type="number" required class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Sesso *</label><select name="sesso" required class="input-base"><option value="">—</option><option>M</option><option>F</option><option>Altro</option></select></div>
+            <div><label class="label-eyebrow block mb-2">Altezza (cm) *</label><input name="altezza" type="number" required class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Peso attuale (kg) *</label><input name="peso_attuale" type="number" step="0.1" required class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Peso target (kg)</label><input name="peso_target" type="number" step="0.1" class="input-base"/></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: OBIETTIVO -->
+      <section x-show="currentStep === 1" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">II</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Obiettivo</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Dove vuoi arrivare e perché.</p>
+          <div class="space-y-5">
+            <div>
+              <label class="label-eyebrow block mb-2">Obiettivo principale *</label>
+              <select name="obiettivo_principale" required class="input-base">
+                <option value="">—</option>
+                <option>Perdita di grasso</option>
+                <option>Aumento massa muscolare</option>
+                <option>Ricomposizione corporea</option>
+                <option>Performance / forza</option>
+                <option>Wellness generale</option>
+                <option>Altro</option>
+              </select>
+            </div>
+            <div><label class="label-eyebrow block mb-2">Obiettivo specifico *</label><input name="obiettivo_specifico" required class="input-base" placeholder="es. -3kg grasso, +2kg muscolo"/></div>
+            <div><label class="label-eyebrow block mb-2">Perché adesso? Cosa ha scattato la decisione? *</label><textarea name="motivazione" required rows="4" class="input-base"></textarea></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3: STORIA SALUTE -->
+      <section x-show="currentStep === 2" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">III</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Storia salute</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Per evitare protocolli sbagliati.</p>
+          <div class="space-y-5">
+            <div><label class="label-eyebrow block mb-2">Patologie / problemi salute</label><textarea name="patologie" rows="2" class="input-base" placeholder="diabete, ipertensione, tiroide, ernie..."></textarea></div>
+            <div><label class="label-eyebrow block mb-2">Farmaci o integratori attuali</label><textarea name="farmaci" rows="2" class="input-base"></textarea></div>
+            <div><label class="label-eyebrow block mb-2">Infortuni passati o presenti</label><textarea name="infortuni" rows="2" class="input-base"></textarea></div>
+            <div><label class="label-eyebrow block mb-2">Allergie / intolleranze alimentari</label><input name="allergie" class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Restrizioni alimentari (vegano, religiose, etc.)</label><input name="restrizioni" class="input-base"/></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 4: COMPOSIZIONE CORPOREA -->
+      <section x-show="currentStep === 3" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">IV</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Circonferenze</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Se non le hai, salta tutto — le prendiamo insieme in kickoff. Misure in cm.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="label-eyebrow block mb-2">Vita (cm)</label><input name="vita" type="number" step="0.1" class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Fianchi (cm)</label><input name="fianchi" type="number" step="0.1" class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Braccia (cm)</label><input name="braccia" type="number" step="0.1" class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Cosce (cm)</label><input name="cosce" type="number" step="0.1" class="input-base"/></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 5: PERFORMANCE -->
+      <section x-show="currentStep === 4" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">V</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Performance training</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Anni esperienza e massimali (se conosciuti).</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2"><label class="label-eyebrow block mb-2">Anni di training continuativo *</label><input name="anni_training" type="number" step="0.5" required class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Max squat (kg)</label><input name="squat_max" type="number" step="0.5" class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Max panca piana (kg)</label><input name="panca_max" type="number" step="0.5" class="input-base"/></div>
+            <div class="md:col-span-2"><label class="label-eyebrow block mb-2">Max stacco (kg)</label><input name="stacco_max" type="number" step="0.5" class="input-base"/></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 6: ROUTINE -->
+      <section x-show="currentStep === 5" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">VI</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Routine attuale</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Cosa fai oggi e in che condizioni.</p>
+          <div class="space-y-5">
+            <div><label class="label-eyebrow block mb-2">Frequenza allenamenti (giorni/sett) *</label><input name="freq_allenamenti" type="number" required class="input-base"/></div>
+            <div><label class="label-eyebrow block mb-2">Tipo di allenamenti che fai *</label><textarea name="tipo_allenamenti" required rows="3" class="input-base" placeholder="es. forza 3x/sett + corsa 2x"></textarea></div>
+            <div><label class="label-eyebrow block mb-2">Orari abituali</label><input name="orari_training" class="input-base" placeholder="mattina / pomeriggio / sera"/></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label class="label-eyebrow block mb-2">Ore sonno medie *</label><input name="ore_sonno" type="number" step="0.5" required class="input-base"/></div>
+              <div><label class="label-eyebrow block mb-2">Qualità sonno (1-10) *</label><input name="qualita_sonno" type="number" min="1" max="10" required class="input-base"/></div>
+            </div>
+            <div><label class="label-eyebrow block mb-2">Stress quotidiano (1-10) *</label><input name="stress_level" type="number" min="1" max="10" required class="input-base"/></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 7: DIETA -->
+      <section x-show="currentStep === 6" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">VII</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Dieta attuale</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Numeri di partenza. La giornata-tipo dettagliata me la manderai via WhatsApp.</p>
+          <div class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label class="label-eyebrow block mb-2">Pasti/giorno</label><input name="pasti_giorno" type="number" class="input-base"/></div>
+              <div><label class="label-eyebrow block mb-2">Acqua (litri)</label><input name="acqua_litri" type="number" step="0.5" class="input-base"/></div>
+            </div>
+            <div><label class="label-eyebrow block mb-2">Alcol (frequenza + tipo)</label><input name="alcol" class="input-base" placeholder="es. 2 birre nel weekend"/></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 8: MINDSET -->
+      <section x-show="currentStep === 7" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">VIII</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Mindset &amp; ostacoli</h2>
+          <p class="serif italic text-sm text-center mb-8" style="color: var(--gold);">La parte più importante.</p>
+          <div class="space-y-5">
+            <div><label class="label-eyebrow block mb-2">Cosa ha funzionato in passato per te *</label><textarea name="cosa_funzionato" required rows="3" class="input-base"></textarea></div>
+            <div><label class="label-eyebrow block mb-2">Cosa NON ha funzionato e perché *</label><textarea name="cosa_non_funzionato" required rows="3" class="input-base" placeholder="es. nutrizionista che non ascoltava..."></textarea></div>
+            <div><label class="label-eyebrow block mb-2">Ostacoli che prevedi *</label><textarea name="ostacoli" required rows="2" class="input-base" placeholder="lavoro, viaggi, famiglia..."></textarea></div>
+            <div><label class="label-eyebrow block mb-2">Supporto sociale (alleato o ostacolo?)</label><textarea name="supporto_sociale" rows="2" class="input-base"></textarea></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 9: CONSENSO -->
+      <section x-show="currentStep === 8" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">IX</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Consenso case study</h2>
+          <p class="text-xs text-center text-cream-muted mb-8 max-w-md mx-auto">Il percorso è gratuito. In cambio chiedo consenso a usare la tua trasformazione come case study. Seleziona cosa va bene. Sempre revocabile.</p>
+          <div class="space-y-3">
+            <label class="check-card flex items-center gap-3 p-4 cursor-pointer">
+              <input type="checkbox" name="consenso_foto" value="si" class="w-5 h-5"/>
+              <span class="text-sm">Foto pubblicabili (prima/dopo)</span>
+            </label>
+            <label class="check-card flex items-center gap-3 p-4 cursor-pointer">
+              <input type="checkbox" name="consenso_nome" value="si" class="w-5 h-5"/>
+              <span class="text-sm">Nome pubblico (es. "Vincenzo, 30 anni")</span>
+            </label>
+            <label class="check-card flex items-center gap-3 p-4 cursor-pointer">
+              <input type="checkbox" name="consenso_numeri" value="si" class="w-5 h-5"/>
+              <span class="text-sm">Numeri pubblici (peso, misure, kg)</span>
+            </label>
+            <label class="check-card flex items-center gap-3 p-4 cursor-pointer">
+              <input type="checkbox" name="consenso_storia" value="si" class="w-5 h-5"/>
+              <span class="text-sm">Storia personale e percorso</span>
+            </label>
+            <label class="check-card flex items-center gap-3 p-4 cursor-pointer">
+              <input type="checkbox" name="consenso_video" value="si" class="w-5 h-5"/>
+              <span class="text-sm">Video testimonianza finale (opzionale)</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 10: CONTATTI -->
+      <section x-show="currentStep === 9" class="frame p-8 md:p-12 step-enter" x-transition>
+        <div class="relative z-10">
+          <div class="text-center mb-2"><span class="roman-numeral">X</span></div>
+          <div class="gold-line max-w-[80px] mx-auto mb-4"></div>
+          <h2 class="serif text-2xl md:text-3xl text-center mb-2" style="color: var(--cream);">Email</h2>
+          <p class="text-xs text-center text-cream-muted mb-8">Ultima cosa. Mi serve per mandarti i materiali e l'invito alla call.</p>
+          <div class="space-y-5">
+            <div><label class="label-eyebrow block mb-2">Email *</label><input name="email" type="email" required class="input-base"/></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NAVIGATION -->
+      <div class="mt-8 flex items-center justify-between gap-4">
+        <button type="button" @click="prev()" :disabled="currentStep === 0" class="btn-secondary">
+          ← Indietro
+        </button>
+
+        <button type="button" x-show="currentStep < steps.length - 1" @click="next()" class="btn-primary">
+          Avanti →
+        </button>
+
+        <button type="submit" x-show="currentStep === steps.length - 1" :disabled="submitting" class="btn-primary">
+          <span x-show="!submitting">Invia ✦</span>
+          <span x-show="submitting">Invio in corso...</span>
+        </button>
+      </div>
+
+      <!-- STATUS -->
+      <p x-show="status" x-text="status" :class="statusClass" class="mt-4 text-center text-sm font-medium"></p>
+
+    </form>
+
+    <!-- SUCCESS STATE -->
+    <div x-show="submitted" x-cloak class="frame p-12 text-center step-enter">
+      <div class="relative z-10">
+        <div class="text-center mb-4"><span class="gold-diamond"></span></div>
+        <div class="gold-line max-w-[80px] mx-auto mb-6"></div>
+        <h2 class="serif italic text-3xl md:text-4xl mb-4" style="color: var(--cream);">Ricevuto.</h2>
+        <p class="text-sm text-cream-soft max-w-sm mx-auto mb-6">Ti scrivo entro 24 ore con i prossimi step.</p>
+        <div class="gold-line max-w-[80px] mx-auto"></div>
+      </div>
+    </div>
+
+    <footer class="mt-16 text-center">
+      <div class="gold-line max-w-xs mx-auto mb-4"></div>
+      <p class="label-eyebrow">Un percorso di 90 giorni</p>
+      <p class="text-xs text-cream-muted mt-3">I tuoi dati restano privati. Usati solo per il tuo programma.</p>
+    </footer>
+
+  </main>
+
+  <script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrPqgzDVe7qwJywdhbjRW0BGc9Rf6urCvd0o1Sra_qxpsZbQ3KJnlXXjefG_pptPHP/exec";
+
+    function formApp() {
+      return {
+        currentStep: 0,
+        submitting: false,
+        submitted: false,
+        status: "",
+        statusClass: "",
+        steps: [
+          { title: "Anagrafica" },
+          { title: "Obiettivo" },
+          { title: "Storia salute" },
+          { title: "Circonferenze" },
+          { title: "Performance" },
+          { title: "Routine" },
+          { title: "Dieta" },
+          { title: "Mindset" },
+          { title: "Consenso" },
+          { title: "Email" },
+        ],
+
+        next() {
+          const currentSection = document.querySelectorAll('section')[this.currentStep];
+          const requiredFields = currentSection.querySelectorAll('[required]');
+          for (const field of requiredFields) {
+            if (!field.value) {
+              field.focus();
+              field.style.borderColor = '#d4495a';
+              field.style.boxShadow = '0 0 0 1px rgba(212, 73, 90, 0.4)';
+              this.status = "Compila i campi obbligatori (*)";
+              this.statusClass = "text-red-300";
+              setTimeout(() => {
+                field.style.borderColor = '';
+                field.style.boxShadow = '';
+                this.status = "";
+              }, 2500);
+              return;
+            }
+          }
+          if (this.currentStep < this.steps.length - 1) {
+            this.currentStep++;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        },
+
+        prev() {
+          if (this.currentStep > 0) {
+            this.currentStep--;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        },
+
+        async submit() {
+          this.submitting = true;
+          this.status = "";
+
+          const form = document.getElementById('intakeForm');
+          const fd = new FormData(form);
+          fd.append('_submitted_at', new Date().toISOString());
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: "POST",
+              body: fd,
+            });
+            this.submitted = true;
+          } catch (err) {
+            this.status = "Errore invio: " + err.message;
+            this.statusClass = "text-red-300";
+            this.submitting = false;
+          }
+        },
+      };
+    }
+  </script>
+</body>
+</html>
